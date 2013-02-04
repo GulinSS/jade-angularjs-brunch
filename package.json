@@ -1,0 +1,34 @@
+{
+  "name": "jade-angularjs-brunch",
+  "version": "0.0.1",
+  "description": "Adds Jade support to brunch with angularjs template cache modules.",
+  "author": {
+    "name": "Gulin Serge",
+    "url": "http://gulin.pro/"
+  },
+  "homepage": "https://github.com/GulinSS/jade-angularjs-brunch",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:GulinSS/jade-angularjs-brunch.git"
+  },
+  "main": "./lib/index",
+  "scripts": {
+    "prepublish": "coffee -o lib/ src/",
+    "postinstall": "node setup.js postinstall",
+    "test": "node setup.js test"
+  },
+  "engines": {
+    "node": "~0.6.10 || 0.8 || 0.9"
+  },
+  "dependencies": {
+    "coffee-script": "1.3.3",
+    "jade": "0.26.3",
+    "mkdirp": "*"
+  },
+  "devDependencies": {
+    "mocha": "1.2.2",
+    "chai": "1.1.0"
+  },
+  "_id": "jade-angularjs-brunch@0.0.1",
+  "_from": "jade-angularjs-brunch@>= 0.0.1 < 1.5"
+}
