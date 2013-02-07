@@ -17,6 +17,7 @@ module.exports = class JadeAngularJsCompiler
   extension: 'jade'
 
   constructor: (config) ->
+    @public = config.paths.public
     @pretty = !!config.plugins?.jade?.pretty
     @locals = config.plugins?.jade_angular?.locals
     @modulesFolder = config.plugins?.jade_angular?.modules_folder
@@ -35,7 +36,7 @@ module.exports = class JadeAngularJsCompiler
 
   preparePair: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
-    pair.path.splice 0, 1, '_public'
+    pair.path.splice 0, 1, @public
 
   writeStatic: (pair) ->
     @preparePair pair
@@ -45,17 +46,27 @@ module.exports = class JadeAngularJsCompiler
   setupModule: (pair) ->
     @preparePair pair
     pair.path.splice 1, 1, 'js'
+
     modulePath = pair.path.slice 2, pair.path.lastIndexOf(@modulesFolder)+1
+
+    if modulePath.length is 0
+      modulePath.push @modulesFolder
+
     moduleName = modulePath.join '.'
     jsFileName = moduleName + '.js'
     modulePath.push pair.path[pair.path.length-1]
     copyfolder = pair.path.slice 0, 2
     copyfolder.push jsFileName
 
+    virtualPathGen = ->
+      if modulePath.length is 2
+        return '/' + modulePath.join('/')
+      else return '/' + [modulePath[0], modulePath[2]].join('/')
+
     result =
       moduleName: moduleName
       modulePath: sysPath.join.apply this, copyfolder
-      virtualPath: '/' + [modulePath[0], modulePath[2]].join('/')
+      virtualPath: virtualPathGen()
       content: pair.result
 
   parseStringToJSArray: (str) ->
