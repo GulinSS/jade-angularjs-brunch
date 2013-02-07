@@ -23,8 +23,8 @@ Automatic compiler Jade templates to AngularJS modules for Brunch.IO
                   modules_folder: 'templates'
                   locals: {}
 
-modules_folder -- folder with your template
-locals -- context for jade compiler
+* modules_folder: folder with your template
+* locals: context for jade compiler
 
 ### Now you can get angular.js modules:
 
