@@ -14,6 +14,18 @@ Automatic compiler Jade templates to AngularJS modules for Brunch.IO
       joinTo: 
         'js/dontUseMe' : /^app/ #slutty hack for Jade-auto-compiling
 
+### Add to plugin section in config.coffee:
+
+      plugins:
+            jade:
+                  pretty: yes # Adds pretty-indentation whitespaces to output (false by default)
+            jade_angular:
+                  modules_folder: 'templates'
+                  locals: {}
+
+* modules_folder: folder with your template
+* locals: context for jade compiler
+
 ### Now you can get angular.js modules:
 
 _public/js/login.template.js:
