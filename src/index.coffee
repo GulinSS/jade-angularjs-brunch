@@ -95,7 +95,10 @@ module.exports = class JadeAngularJsCompiler
 
   #TODO: сделать async
   prepareResult: (compiled) ->
-    pathes = (result.sourceFiles for result in compiled when result.path is sysPath.normalize('_public/js/dontUseMe'))[0]
+    
+    publicPath = @public;
+    
+    pathes = (result.sourceFiles for result in compiled when result.path is sysPath.normalize(publicPath + '/js/dontUseMe'))[0]
 
     return [] if pathes is undefined
 
