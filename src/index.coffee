@@ -21,6 +21,7 @@ module.exports = class JadeAngularJsCompiler
     @pretty = !!config.plugins?.jade?.pretty
     @locals = config.plugins?.jade_angular?.locals
     @modulesFolder = config.plugins?.jade_angular?.modules_folder
+    @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths.jadeCompileTrigger or 'js/dontUseMe')
 
   compile: (data, path, callback) ->
     try
@@ -54,16 +55,14 @@ module.exports = class JadeAngularJsCompiler
 
     moduleName = modulePath.join '.'
     jsFileName = moduleName + '.js'
-    
-    for vpath in pair.path.slice 2, pair.path.length - 1
-      modulePath.push vpath
-      
     modulePath.push pair.path[pair.path.length-1]
     copyfolder = pair.path.slice 0, 2
     copyfolder.push jsFileName
 
     virtualPathGen = ->
+      if modulePath.length is 2
         return '/' + modulePath.join('/')
+      else return '/' + [modulePath[0], modulePath[2]].join('/')
 
     result =
       moduleName: moduleName
@@ -97,10 +96,7 @@ module.exports = class JadeAngularJsCompiler
 
   #TODO: сделать async
   prepareResult: (compiled) ->
-    
-    publicPath = @public;
-    
-    pathes = (result.sourceFiles for result in compiled when result.path is sysPath.normalize(publicPath + '/js/dontUseMe'))[0]
+    pathes = (result.sourceFiles for result in compiled when result.path is @compileTrigger)[0]
 
     return [] if pathes is undefined
 

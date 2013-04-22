@@ -9,19 +9,23 @@ Automatic compiler Jade templates to AngularJS modules for Brunch.IO
 
 `` "jade-angularjs-brunch" : ">= 0.0.1 < 1.5" `` 
 
+### Add to paths section in config.coffee:
+
+    jadeCompileTrigger: '.compile-jade'  # Defaults to 'js/dontUseMe'.
+
 ### Add to templates section in config.coffee:
 
-      joinTo: 
-        'js/dontUseMe' : /^app/ #slutty hack for Jade-auto-compiling
+    joinTo: 
+      '.compile-jade': /^app/  # Hack for auto-compiling Jade templates.
 
 ### Add to plugin section in config.coffee:
 
-      plugins:
-            jade:
-                  pretty: yes # Adds pretty-indentation whitespaces to output (false by default)
-            jade_angular:
-                  modules_folder: 'templates'
-                  locals: {}
+    plugins:
+      jade:
+        pretty: yes  # Adds pretty-indentation whitespaces to output (false by default).
+      jade_angular:
+        modules_folder: 'templates'
+        locals: {}
 
 * modules_folder: folder with your template
 * locals: context for jade compiler
