@@ -23,6 +23,7 @@ Automatic compiler Jade templates to AngularJS modules for Brunch.IO
     plugins:
       jade:
         pretty: yes  # Adds pretty-indentation whitespaces to output (false by default).
+        doctype: "xml"  # Specify doctype ("5" by default).
       jade_angular:
         modules_folder: 'templates'
         locals: {}
