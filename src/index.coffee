@@ -19,6 +19,7 @@ module.exports = class JadeAngularJsCompiler
   constructor: (config) ->
     @public = config.paths.public
     @pretty = !!config.plugins?.jade?.pretty
+    @doctype = config.plugins?.jade?.doctype or "5"
     @locals = config.plugins?.jade_angular?.locals
     @modulesFolder = config.plugins?.jade_angular?.modules_folder
     @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths.jadeCompileTrigger or 'js/dontUseMe')
@@ -29,7 +30,8 @@ module.exports = class JadeAngularJsCompiler
         compileDebug: no,
         client: no,
         filename: path,
-        pretty: @pretty
+        pretty: @pretty,
+        doctype: @doctype
     catch err
       error = err
     finally
@@ -106,7 +108,8 @@ module.exports = class JadeAngularJsCompiler
           compileDebug: no,
           client: no,
           filename: e.path,
-          pretty: @pretty
+          pretty: @pretty,
+          doctype: @doctype
 
         result =
           path: e.path.split sysPath.sep
