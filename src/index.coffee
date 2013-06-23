@@ -19,10 +19,8 @@ module.exports = class JadeAngularJsCompiler
   constructor: (config) ->
     @public = config.paths.public
     @pretty = !!config.plugins?.jade?.pretty
-    @doctype = config.plugins?.jade?.doctype or "5"
     @locals = config.plugins?.jade_angular?.locals
     @modulesFolder = config.plugins?.jade_angular?.modules_folder
-    @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths.jadeCompileTrigger or 'js/dontUseMe')
 
   compile: (data, path, callback) ->
     try
@@ -30,8 +28,7 @@ module.exports = class JadeAngularJsCompiler
         compileDebug: no,
         client: no,
         filename: path,
-        pretty: @pretty,
-        doctype: @doctype
+        pretty: @pretty
     catch err
       error = err
     finally
@@ -50,21 +47,22 @@ module.exports = class JadeAngularJsCompiler
     @preparePair pair
     pair.path.splice 1, 1, 'js'
 
-    modulePath = pair.path.slice 2, pair.path.lastIndexOf(@modulesFolder)+1
+    moduleFolderIndex = pair.path.lastIndexOf(@modulesFolder)+1
+    modulePath = pair.path.slice 2, moduleFolderIndex
 
     if modulePath.length is 0
       modulePath.push @modulesFolder
 
     moduleName = modulePath.join '.'
     jsFileName = moduleName + '.js'
-    modulePath.push pair.path[pair.path.length-1]
     copyfolder = pair.path.slice 0, 2
     copyfolder.push jsFileName
 
-    virtualPathGen = ->
-      if modulePath.length is 2
-        return '/' + modulePath.join('/')
-      else return '/' + [modulePath[0], modulePath[2]].join('/')
+    virtualPathGen = =>
+      virtualPath = modulePath.concat pair.path.slice moduleFolderIndex
+      virtualPath = "/#{virtualPath.join '/'}"
+      virtualPath = virtualPath.replace "/#{@modulesFolder}", ''
+      virtualPath
 
     result =
       moduleName: moduleName
@@ -98,7 +96,7 @@ module.exports = class JadeAngularJsCompiler
 
   #TODO: сделать async
   prepareResult: (compiled) ->
-    pathes = (result.sourceFiles for result in compiled when result.path is @compileTrigger)[0]
+    pathes = (result.sourceFiles for result in compiled when result.path is sysPath.normalize('_public/js/dontUseMe'))[0]
 
     return [] if pathes is undefined
 
@@ -108,8 +106,7 @@ module.exports = class JadeAngularJsCompiler
           compileDebug: no,
           client: no,
           filename: e.path,
-          pretty: @pretty,
-          doctype: @doctype
+          pretty: @pretty
 
         result =
           path: e.path.split sysPath.sep
