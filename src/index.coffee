@@ -30,8 +30,8 @@ module.exports = class JadeAngularJsCompiler
         compileDebug: no,
         client: no,
         filename: path,
-        pretty: @pretty,
         doctype: @doctype
+        pretty: @pretty
     catch err
       error = err
     finally
@@ -50,21 +50,22 @@ module.exports = class JadeAngularJsCompiler
     @preparePair pair
     pair.path.splice 1, 1, 'js'
 
-    modulePath = pair.path.slice 2, pair.path.lastIndexOf(@modulesFolder)+1
+    moduleFolderIndex = pair.path.lastIndexOf(@modulesFolder)+1
+    modulePath = pair.path.slice 2, moduleFolderIndex
 
     if modulePath.length is 0
       modulePath.push @modulesFolder
 
     moduleName = modulePath.join '.'
     jsFileName = moduleName + '.js'
-    modulePath.push pair.path[pair.path.length-1]
     copyfolder = pair.path.slice 0, 2
     copyfolder.push jsFileName
 
-    virtualPathGen = ->
-      if modulePath.length is 2
-        return '/' + modulePath.join('/')
-      else return '/' + [modulePath[0], modulePath[2]].join('/')
+    virtualPathGen = =>
+      virtualPath = modulePath.concat pair.path.slice moduleFolderIndex
+      virtualPath = "/#{virtualPath.join '/'}"
+      virtualPath = virtualPath.replace "/#{@modulesFolder}", ''
+      virtualPath
 
     result =
       moduleName: moduleName
@@ -108,8 +109,8 @@ module.exports = class JadeAngularJsCompiler
           compileDebug: no,
           client: no,
           filename: e.path,
-          pretty: @pretty,
           doctype: @doctype
+          pretty: @pretty
 
         result =
           path: e.path.split sysPath.sep
