@@ -23,6 +23,8 @@ module.exports = class JadeAngularJsCompiler
     @locals = config.plugins?.jade_angular?.locals
     @modulesFolder = config.plugins?.jade_angular?.modules_folder
     @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths.jadeCompileTrigger or 'js/dontUseMe')
+    @singleFile = config?.plugins?.jade_angular?.single_file
+    @singleFileName = config?.plugins?.jade_angular?.single_file_name ? sysPath.join @public, 'js', @singleFileName
 
   compile: (data, path, callback) ->
     try
@@ -80,22 +82,29 @@ module.exports = class JadeAngularJsCompiler
     stringArray += "''" + '].join("\\n")'
 
   writeModules: (modules) ->
+    content = ""
     for own moduleName, templates of modules
-      content = """
+      moduleContent = """
                 angular.module('#{moduleName}', [])
                 """
       templates.map (e, i) =>
         inlineContent = @parseStringToJSArray(e.content)
-        content +=  """
+        moduleContent +=  """
                     \n.run(['$templateCache', function($templateCache) {
                       return $templateCache.put('#{e.virtualPath}', #{inlineContent});
                     }])
                     """
 
-      content += ";"
+      moduleContent += ";"
 
-      writer = fileWriter templates[0].modulePath
-      writer null, content
+      if @singleFile
+        content += "\n#{moduleContent}"
+      else
+        writer = fileWriter templates[0].modulePath
+        writer null, content
+
+    if @singleFile
+      writer = fileWriter @singleFileName
 
   #TODO: сделать async
   prepareResult: (compiled) ->
