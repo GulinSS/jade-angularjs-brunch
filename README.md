@@ -11,22 +11,28 @@ Automatic compiler Jade templates to AngularJS modules for Brunch.IO
 
 ### Add to paths section in config.coffee:
 
-    jadeCompileTrigger: '.compile-jade'  # Defaults to 'js/dontUseMe'.
+```coffee
+jadeCompileTrigger: '.compile-jade'  # Defaults to 'js/dontUseMe'.
+```
 
 ### Add to templates section in config.coffee:
 
-    joinTo: 
-      '.compile-jade': /^app/  # Hack for auto-compiling Jade templates.
+```coffee
+joinTo: 
+  '.compile-jade': /^app/  # Hack for auto-compiling Jade templates.
+```
 
 ### Add to plugin section in config.coffee:
 
-    plugins:
-      jade:
-        pretty: yes  # Adds pretty-indentation whitespaces to output (false by default).
-        doctype: "xml"  # Specify doctype ("5" by default).
-      jade_angular:
-        modules_folder: 'templates'
-        locals: {}
+```coffee
+plugins:
+  jade:
+    pretty: yes  # Adds pretty-indentation whitespaces to output (false by default).
+    doctype: "xml"  # Specify doctype ("5" by default).
+  jade_angular:
+    modules_folder: 'templates'
+    locals: {}
+```
 
 * modules_folder: folder with your template
 * locals: context for jade compiler
@@ -35,10 +41,22 @@ Automatic compiler Jade templates to AngularJS modules for Brunch.IO
 
 _public/js/login.template.js:
 
-    angular.module('login.templates', [])
-    .run(['$templateCache', function($templateCache) {
-      return $templateCache.put('/login/modal.page.html', [
-    'This is content of your jade-file',''].join("\n"));
-    }])
+```js
+angular.module('login.templates', [])
+.run(['$templateCache', function($templateCache) {
+  return $templateCache.put('/login/modal.page.html', [
+'This is content of your jade-file',''].join("\n"));
+}])
+```
 
+# Single-File Mode
 
+If you want a single file instead of a file per module, you can use the `single_file` option in `jade_angular`.
+
+```coffee
+plugins:
+  jade_angular:
+    single_file: true
+    # if you want to change the file name (defaults to js/templates.js and is in your public directory)
+    single_file_name: 'js/angular_templates.js'
+```
