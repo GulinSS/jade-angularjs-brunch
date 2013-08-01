@@ -1,2 +1,5 @@
-global.expect = require('chai').expect;
+chai = require('chai');
+chai.should();
+
+global.expect = chai.expect;
 global.Plugin = require('../lib');

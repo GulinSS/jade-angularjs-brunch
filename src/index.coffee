@@ -17,14 +17,14 @@ module.exports = class JadeAngularJsCompiler
   extension: 'jade'
 
   constructor: (config) ->
-    @public = config.paths.public
+    @public = config.paths?.public or "_public"
     @pretty = !!config.plugins?.jade?.pretty
     @doctype = config.plugins?.jade?.doctype or "5"
-    @locals = config.plugins?.jade_angular?.locals
-    @modulesFolder = config.plugins?.jade_angular?.modules_folder
-    @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths.jadeCompileTrigger or 'js/dontUseMe')
-    @singleFile = config?.plugins?.jade_angular?.single_file
-    @singleFileName = config?.plugins?.jade_angular?.single_file_name ? sysPath.join @public, 'js', @singleFileName
+    @locals = config.plugins?.jade_angular?.locals or {}
+    @modulesFolder = config.plugins?.jade_angular?.modules_folder or "templates"
+    @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths?.jadeCompileTrigger or 'js/dontUseMe')
+    @singleFile = !!config?.plugins?.jade_angular?.single_file
+    @singleFileName = sysPath.join @public, 'js', (config?.plugins?.jade_angular?.single_file_name or "templates.js")
 
   compile: (data, path, callback) ->
     try

@@ -23,6 +23,7 @@ if (mode === 'postinstall') {
     execute(['node_modules', 'coffee-script', 'bin', 'coffee'], '-o lib/ src/');
   });
 } else if (mode === 'test') {
+  execute(['node_modules', 'coffee-script', 'bin', 'coffee'], '-o lib/ src/');
   execute(['node_modules', 'mocha', 'bin', 'mocha'],
     '--require test/common.js --require coffee-script --compilers coffee:coffee-script --colors -R \'spec\'');
 }
