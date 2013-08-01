@@ -1,4 +1,4 @@
-jade-angularjs-brunch
+jade-angularjs-brunch [![Build Status](https://travis-ci.org/GulinSS/jade-angularjs-brunch.png?branch=master)](https://travis-ci.org/GulinSS/jade-angularjs-brunch)
 =====================
 
 Automatic compiler Jade templates to AngularJS modules for Brunch.IO
