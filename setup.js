@@ -24,5 +24,5 @@ if (mode === 'postinstall') {
   });
 } else if (mode === 'test') {
   execute(['node_modules', 'mocha', 'bin', 'mocha'],
-    '--require test/common.js --colors');
+    '--require test/common.js --require coffee-script --compilers coffee:coffee-script --colors -R \'spec\'');
 }

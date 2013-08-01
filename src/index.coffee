@@ -106,7 +106,6 @@ module.exports = class JadeAngularJsCompiler
     if @singleFile
       writer = fileWriter @singleFileName
 
-  #TODO: сделать async
   prepareResult: (compiled) ->
     pathes = (result.sourceFiles for result in compiled when result.path is @compileTrigger)[0]
 
