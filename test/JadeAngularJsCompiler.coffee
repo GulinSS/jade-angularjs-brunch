@@ -147,6 +147,7 @@ describe "JadeAngularJsCompiler", ->
 
           path.should.be.deep.equal ['_public', 'folder', 'file', 'html']
 
+      describe "setupModule", ->
 
 
     describe "Post-compile hook", ->

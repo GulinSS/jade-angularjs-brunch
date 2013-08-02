@@ -43,6 +43,7 @@ module.exports = class JadeAngularJsCompiler
     finally
       callback error, ""
 
+  # TODO: rename to preparePairStatic
   preparePair: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
     pair.path.splice 0, 0, @public
@@ -52,6 +53,12 @@ module.exports = class JadeAngularJsCompiler
     writer = fileWriter sysPath.join.apply(this, pair.path)
     writer null, pair.result
 
+  # TODO: remove preparePair call
+  # TODO: cut file name and file extension
+  # TODO: somewhere:
+  #   TODO: group by path array content
+  #   TODO: generate javascript file name for module
+  #   TODO: save modules to disk
   setupModule: (pair) ->
     @preparePair pair
     pair.path.splice 1, 1, 'js'
