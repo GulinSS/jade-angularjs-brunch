@@ -45,7 +45,7 @@ module.exports = class JadeAngularJsCompiler
 
   preparePair: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
-    pair.path.splice 0, 1, @public
+    pair.path.splice 0, 0, @public
 
   writeStatic: (pair) ->
     @preparePair pair
@@ -102,8 +102,6 @@ module.exports = class JadeAngularJsCompiler
 
       moduleContent += ";"
 
-      console.log moduleContent
-
       if @singleFile
         content += "\n#{moduleContent}"
       else
@@ -112,6 +110,7 @@ module.exports = class JadeAngularJsCompiler
 
     if @singleFile
       writer = fileWriter @singleFileName
+      writer null, content
 
   prepareResult: (compiled) ->
     pathes = (result.sourceFiles for result in compiled when result.path is @compileTrigger)[0]

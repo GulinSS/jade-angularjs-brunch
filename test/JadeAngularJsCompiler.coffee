@@ -81,7 +81,7 @@ describe "JadeAngularJsCompiler", ->
             r.result.should.be.equal fileHtmlContent
 
       describe "writeModules", ->
-        it "Must write templates into root module", ->
+        it "Must write templates into root module", (done) ->
           tempFileName = "temp.tmp"
 
           plugin.writeModules(
@@ -101,13 +101,52 @@ describe "JadeAngularJsCompiler", ->
             ]
           )
 
+          setTimeout ->
 
+            contentFirst = fs.readFileSync tempFileName, encoding: "utf8"
+            contentFirst.should.equal("""
+                                      angular.module('myModule', [])
+                                      .run(['$templateCache', function($templateCache) {
+                                        return $templateCache.put('hello.tmp', [
+                                      'Hello!',''].join("\\n"));
+                                      }])
+                                      .run(['$templateCache', function($templateCache) {
+                                        return $templateCache.put('hello2.tmp', [
+                                      'Hello!2',''].join("\\n"));
+                                      }]);""")
+
+            contentSecond = fs.readFileSync tempFileName+1, encoding: "utf8"
+            contentSecond.should.equal("""
+                                       angular.module('myModule2', [])
+                                       .run(['$templateCache', function($templateCache) {
+                                         return $templateCache.put('hello3.tmp', [
+                                       'Hello!2-1',''].join("\\n"));
+                                       }]);
+                                       """)
+
+            fs.unlinkSync tempFileName
+            fs.unlinkSync tempFileName+1
+            done()
+          , 250
 
         xit "TODO: test for singleFile", ->
           true.should.be.equal true
 
         xit "TODO: parse string to JSArray", ->
           true.should.be.equal true
+
+      describe "writeStatic", ->
+        xit "TODO: write content to file", ->
+
+      describe "preparePair", ->
+        it "Change file extension from jade to html and add result public folder as first", ->
+          path = ['folder', 'file', 'jade']
+
+          plugin.preparePair
+            path: path
+
+          path.should.be.deep.equal ['_public', 'folder', 'file', 'html']
+
 
 
     describe "Post-compile hook", ->

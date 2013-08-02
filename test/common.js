@@ -3,3 +3,4 @@ chai.should();
 
 global.expect = chai.expect;
 global.Plugin = require('../lib');
+global.fs = require('fs');
