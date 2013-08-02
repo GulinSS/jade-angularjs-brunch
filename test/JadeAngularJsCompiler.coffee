@@ -15,6 +15,9 @@ describe "JadeAngularJsCompiler", ->
 
   describe "In action", ->
     plugin = null
+    _public = "_public"
+    compileTrigger = "#{_public}/js/dontUseMe"
+    fileHtmlContent = "<!DOCTYPE html>"
 
     beforeEach ->
       plugin = new Plugin({})
@@ -27,7 +30,7 @@ describe "JadeAngularJsCompiler", ->
         pretty: false
         doctype: "5"
         modulesFolder: "templates"
-        compileTrigger: "#{_public}/js/dontUseMe"
+        compileTrigger: compileTrigger
         singleFile: false
         singleFileName: "#{_public}/js/angular_templates.js"
 
@@ -47,4 +50,80 @@ describe "JadeAngularJsCompiler", ->
           expect(error).to.equal undefined
           content.should.equal ""
 
+    describe "Parts of main function", ->
+      describe "prepareResult", ->
+        it "Must return empty array if input don't have compileTrigger's path", ->
+          result = plugin.prepareResult([
+            sourceFiles: []
+            path: ""
+          ])
+
+          result.should.have.length 0
+
+        it "Must return pairs with path and result on correct compileTrigger", ->
+          result = plugin.prepareResult([
+            sourceFiles: [
+              path: "test/folder/partial1.jade"
+            ,
+              path: "test/folder/partial2.jade"
+            ]
+            path: compileTrigger
+          ])
+
+          result.should.be.an('array')
+
+          for v, i in ['partial1.jade', 'partial2.jade']
+            r = result[i]
+            r.should.contain.keys(['path', 'result'])
+            r.path.should.be.an('array')
+            r.path.should.be.deep.equal(['test', 'folder', v])
+            r.result.should.be.an('string')
+            r.result.should.be.equal fileHtmlContent
+
+      describe "writeModules", ->
+        it "Must write templates into root module", ->
+          tempFileName = "temp.tmp"
+
+          plugin.writeModules(
+            "myModule": [
+              content: "Hello!"
+              virtualPath: "hello.tmp"
+              modulePath: tempFileName
+            ,
+              content: "Hello!2"
+              virtualPath: "hello2.tmp"
+              modulePath: tempFileName
+            ]
+            "myModule2": [
+              content: "Hello!2-1"
+              virtualPath: "hello3.tmp"
+              modulePath: tempFileName+1
+            ]
+          )
+
+
+
+        xit "TODO: test for singleFile", ->
+          true.should.be.equal true
+
+        xit "TODO: parse string to JSArray", ->
+          true.should.be.equal true
+
+
     describe "Post-compile hook", ->
+      data = [
+        sourceFiles: [
+          path: "test/folder/index.jade"
+        ,
+          path: "test/folder/partial1.jade"
+        ,
+          path: "test/folder/partial2.jade"
+        ,
+          path: "test/folder/folder/index.jade"
+        ,
+          path: "test/folder/folder/partial1.jade"
+        ,
+          path: "test/folder/folder/partial2.jade"
+        ]
+        path: compileTrigger
+      ]

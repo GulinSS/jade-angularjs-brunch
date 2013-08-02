@@ -79,20 +79,21 @@ module.exports = class JadeAngularJsCompiler
       virtualPath: virtualPathGen()
       content: pair.result
 
-  parseStringToJSArray: (str) ->
-    stringArray = '['
-    str.split('\n').map (e, i) ->
-      stringArray += "\n'" + e.replace(/'/g, "\\'") + "',"
-    stringArray += "''" + '].join("\\n")'
-
   writeModules: (modules) ->
+    parseStringToJSArray = (str) ->
+      stringArray = '['
+      str.split('\n').map (e, i) ->
+        stringArray += "\n'" + e.replace(/'/g, "\\'") + "',"
+      stringArray += "''" + '].join("\\n")'
+
     content = ""
+
     for own moduleName, templates of modules
       moduleContent = """
                 angular.module('#{moduleName}', [])
                 """
       templates.map (e, i) =>
-        inlineContent = @parseStringToJSArray(e.content)
+        inlineContent = parseStringToJSArray(e.content)
         moduleContent +=  """
                     \n.run(['$templateCache', function($templateCache) {
                       return $templateCache.put('#{e.virtualPath}', #{inlineContent});
@@ -101,11 +102,13 @@ module.exports = class JadeAngularJsCompiler
 
       moduleContent += ";"
 
+      console.log moduleContent
+
       if @singleFile
         content += "\n#{moduleContent}"
       else
         writer = fileWriter templates[0].modulePath
-        writer null, content
+        writer null, moduleContent
 
     if @singleFile
       writer = fileWriter @singleFileName
