@@ -23,10 +23,12 @@
     "coffee-script": "1.3.3",
     "jade": "~0.31.0",
     "mkdirp": "*",
-    "lodash": "~0.9.0"    
+    "lodash": "~0.9.0"
   },
   "devDependencies": {
     "mocha": "*",
-    "chai": "*"
+    "chai": "*",
+    "sinon": "~1.7.3",
+    "sinon-chai": "~2.4.0"
   }
 }

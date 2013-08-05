@@ -105,11 +105,11 @@ module.exports = class JadeAngularJsCompiler
       writer null, content
 
   prepareResult: (compiled) ->
-    pathes = (result.sourceFiles for result in compiled when result.path is @compileTrigger)[0]
+    pathes = _.find compiled, (v) => v.path is @compileTrigger
 
     return [] if pathes is undefined
 
-    pathes.map (e, i) => 
+    pathes.sourceFiles.map (e, i) =>
         data = fs.readFileSync e.path, 'utf8'
         content = jade.compile data,
           compileDebug: no,
@@ -125,14 +125,15 @@ module.exports = class JadeAngularJsCompiler
   onCompile: (compiled) ->
     preResult = @prepareResult compiled
 
-    assets = _.filter preResult, (v) -> v.path.indexOf('assets') is -1
+    assets = _.filter preResult, (v) -> v.path.indexOf('assets') > 0
 
     @writeStatic assets
 
     @writeModules _.chain(preResult)
       .difference(assets)
-      .each(@attachModuleNameToTemplate)
+      .each((v) => @attachModuleNameToTemplate v)
+      .each((v) -> v.path = v.path.join('/')) # concat items to virtual url
       .groupBy((v) -> v.module)
       .map((v, k) -> name: k, templates: v)
-      .each(@generateModuleFileName)
+      .each((v) => @generateModuleFileName v)
       .value()

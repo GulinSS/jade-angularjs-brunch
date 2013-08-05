@@ -174,6 +174,8 @@ describe "JadeAngularJsCompiler", ->
     describe "Post-compile hook", ->
       data = [
         sourceFiles: [
+          path: "test/folder/assets/index.jade"
+        ,
           path: "test/folder/index.jade"
         ,
           path: "test/folder/partial1.jade"
@@ -188,3 +190,63 @@ describe "JadeAngularJsCompiler", ->
         ]
         path: compileTrigger
       ]
+
+      beforeEach ->
+        sinon.stub(plugin, "writeModules")
+        sinon.stub(plugin, "writeStatic")
+
+      afterEach ->
+        plugin.writeModules.restore()
+        plugin.writeStatic.restore()
+
+      it "Anyway on test data it should call write methods for modules and assets", ->
+        plugin.onCompile data
+        plugin.writeStatic.should.have.been.calledOnce
+        plugin.writeModules.should.have.been.calledOnce
+
+      it "For assets (any paths contains \'assets\' folder) it should write them \'as is\'", ->
+        plugin.onCompile data
+
+        plugin.writeStatic.args[0].should.length 1
+        plugin.writeStatic.args[0][0].should.length 1
+        plugin.writeStatic.args[0][0][0].path.should.deep.equal ['test', 'folder', 'assets', 'index.jade']
+
+      it "For modules it should filtered and grouped them correct", ->
+        expect = [
+            name: 'test'
+            templates: [
+              path: 'test/folder/index.jade'
+              result: '<!DOCTYPE html>'
+              module: 'test'
+            ,
+              path: 'test/folder/partial1.jade'
+              result: '<!DOCTYPE html>'
+              module: 'test'
+            ,
+              path: 'test/folder/partial2.jade'
+              result: '<!DOCTYPE html>'
+              module: 'test'
+            ]
+            filename: '_public/js/test.js'
+        ,
+            name: 'test.folder',
+            templates: [
+              path: 'test/folder/folder/index.jade'
+              result: '<!DOCTYPE html>'
+              module: 'test.folder'
+            ,
+              path: 'test/folder/folder/partial1.jade'
+              result: '<!DOCTYPE html>'
+              module: 'test.folder'
+            ,
+              path: 'test/folder/folder/partial2.jade'
+              result: '<!DOCTYPE html>'
+              module: 'test.folder'
+            ],
+            filename: '_public/js/test.folder.js'
+        ]
+
+        plugin.onCompile data
+
+        plugin.writeModules.args[0].should.length 1
+        plugin.writeModules.args[0][0].should.deep.equal expect
