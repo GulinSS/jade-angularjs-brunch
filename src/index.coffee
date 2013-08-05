@@ -2,6 +2,7 @@ jade = require 'jade'
 sysPath = require 'path'
 mkdirp  = require 'mkdirp'
 fs = require 'fs'
+_ = require 'lodash'
 
 fileWriter = (newFilePath) -> (err, content) ->
   throw err if err?
@@ -43,76 +44,60 @@ module.exports = class JadeAngularJsCompiler
     finally
       callback error, ""
 
-  # TODO: rename to preparePairStatic
-  preparePair: (pair) ->
+  preparePairStatic: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
     pair.path.splice 0, 0, @public
 
   writeStatic: (pair) ->
-    @preparePair pair
+    @preparePairStatic pair
     writer = fileWriter sysPath.join.apply(this, pair.path)
     writer null, pair.result
 
-  # TODO: remove preparePair call
-  # TODO: cut file name and file extension
-  # TODO: somewhere:
-  #   TODO: group by path array content
-  #   TODO: generate javascript file name for module
-  #   TODO: save modules to disk
-  setupModule: (pair) ->
-    @preparePair pair
-    pair.path.splice 1, 1, 'js'
+  attachModuleNameToTemplate: (pair) ->
+    pair.module = pair.path[0..-3].join '.'
 
-    moduleFolderIndex = pair.path.lastIndexOf(@modulesFolder)+1
-    modulePath = pair.path.slice 2, moduleFolderIndex
-
-    if modulePath.length is 0
-      modulePath.push @modulesFolder
-
-    moduleName = modulePath.join '.'
-    jsFileName = moduleName + '.js'
-    copyfolder = pair.path.slice 0, 2
-    copyfolder.push jsFileName
-
-    virtualPathGen = =>
-      virtualPath = modulePath.concat pair.path.slice moduleFolderIndex
-      virtualPath = "/#{virtualPath.join '/'}"
-      virtualPath = virtualPath.replace "/#{@modulesFolder}", ''
-      virtualPath
-
-    result =
-      moduleName: moduleName
-      modulePath: sysPath.join.apply this, copyfolder
-      virtualPath: virtualPathGen()
-      content: pair.result
+  generateModuleFileName: (module) ->
+    module.filename = "#{@public}/js/#{module.name}.js"
 
   writeModules: (modules) ->
-    parseStringToJSArray = (str) ->
-      stringArray = '['
-      str.split('\n').map (e, i) ->
-        stringArray += "\n'" + e.replace(/'/g, "\\'") + "',"
-      stringArray += "''" + '].join("\\n")'
+
+    buildModule = (module) ->
+      moduleHeader = (name) ->
+        """
+        angular.module('#{name}', [])
+        """
+
+      templateRecord = (result, path) ->
+        parseStringToJSArray = (str) ->
+          stringArray = '['
+          str.split('\n').map (e, i) ->
+            stringArray += "\n'" + e.replace(/'/g, "\\'") + "',"
+          stringArray += "''" + '].join("\\n")'
+
+        """
+        \n.run(['$templateCache', function($templateCache) {
+          return $templateCache.put('#{path}', #{parseStringToJSArray(result)});
+        }])
+        """
+
+      addEndOfModule = -> ";\n"
+
+      content = moduleHeader module.name
+
+      _.each module.templates, (template) ->
+        content += templateRecord template.result, template.path
+
+      content += addEndOfModule()
 
     content = ""
 
-    for own moduleName, templates of modules
-      moduleContent = """
-                angular.module('#{moduleName}', [])
-                """
-      templates.map (e, i) =>
-        inlineContent = parseStringToJSArray(e.content)
-        moduleContent +=  """
-                    \n.run(['$templateCache', function($templateCache) {
-                      return $templateCache.put('#{e.virtualPath}', #{inlineContent});
-                    }])
-                    """
-
-      moduleContent += ";"
+    _.each modules, (module) ->
+      moduleContent = buildModule module
 
       if @singleFile
         content += "\n#{moduleContent}"
       else
-        writer = fileWriter templates[0].modulePath
+        writer = fileWriter module.filename
         writer null, moduleContent
 
     if @singleFile
@@ -140,18 +125,14 @@ module.exports = class JadeAngularJsCompiler
   onCompile: (compiled) ->
     preResult = @prepareResult compiled
 
-    @writeStatic pair for pair in preResult \
-      when pair.path.indexOf(@modulesFolder) is -1 and \
-        pair.path.indexOf('assets') is -1
+    assets = _.filter preResult, (v) -> v.path.indexOf('assets') is -1
 
-    modulesRows = (@setupModule pair for pair in preResult \
-      when pair.path.indexOf(@modulesFolder) > -1 and \
-        pair.path.indexOf('assets') is -1)
+    @writeStatic assets
 
-    modules = {}
-    modulesRows.map (element, index) ->
-      if Object.keys(modules).indexOf(element.moduleName) is -1
-        modules[element.moduleName] = []
-      modules[element.moduleName].push(element)
-
-    @writeModules modules
+    @writeModules _.chain(preResult)
+      .difference(assets)
+      .each(@attachModuleNameToTemplate)
+      .groupBy((v) -> v.module)
+      .map((v, k) -> name: k, templates: v)
+      .each(@generateModuleFileName)
+      .value()

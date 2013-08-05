@@ -84,22 +84,24 @@ describe "JadeAngularJsCompiler", ->
         it "Must write templates into root module", (done) ->
           tempFileName = "temp.tmp"
 
-          plugin.writeModules(
-            "myModule": [
-              content: "Hello!"
-              virtualPath: "hello.tmp"
-              modulePath: tempFileName
+          plugin.writeModules([
+            name: "myModule"
+            filename: tempFileName
+            templates: [
+              path: "hello.tmp"
+              result: "Hello!"
             ,
-              content: "Hello!2"
-              virtualPath: "hello2.tmp"
-              modulePath: tempFileName
+              path: "hello2.tmp"
+              result: "Hello!2"
             ]
-            "myModule2": [
-              content: "Hello!2-1"
-              virtualPath: "hello3.tmp"
-              modulePath: tempFileName+1
+          ,
+            name: "myModule2"
+            filename: tempFileName+1
+            templates: [
+              path: "hello3.tmp"
+              result: "Hello!2-1"
             ]
-          )
+          ])
 
           setTimeout ->
 
@@ -113,7 +115,8 @@ describe "JadeAngularJsCompiler", ->
                                       .run(['$templateCache', function($templateCache) {
                                         return $templateCache.put('hello2.tmp', [
                                       'Hello!2',''].join("\\n"));
-                                      }]);""")
+                                      }]);\n
+                                      """)
 
             contentSecond = fs.readFileSync tempFileName+1, encoding: "utf8"
             contentSecond.should.equal("""
@@ -121,7 +124,7 @@ describe "JadeAngularJsCompiler", ->
                                        .run(['$templateCache', function($templateCache) {
                                          return $templateCache.put('hello3.tmp', [
                                        'Hello!2-1',''].join("\\n"));
-                                       }]);
+                                       }]);\n
                                        """)
 
             fs.unlinkSync tempFileName
@@ -138,17 +141,35 @@ describe "JadeAngularJsCompiler", ->
       describe "writeStatic", ->
         xit "TODO: write content to file", ->
 
-      describe "preparePair", ->
-        it "Change file extension from jade to html and add result public folder as first", ->
+      describe "preparePairStatic", ->
+        it "Change file extension from jade to html and add result public folder as first. Used only by writeStatic.", ->
           path = ['folder', 'file', 'jade']
 
-          plugin.preparePair
+          plugin.preparePairStatic
             path: path
 
           path.should.be.deep.equal ['_public', 'folder', 'file', 'html']
 
-      describe "setupModule", ->
+      describe "attachModuleNameToTemplate", ->
+        it "Add module name to pair", ->
+          pair =
+            path: ['app', 'folder', 'file', 'jade']
+            content: "<!DOCTYPE html>"
 
+          plugin.attachModuleNameToTemplate pair
+
+          pair.should.contain.keys ['module']
+          pair.module.should.equal "app.folder"
+
+      describe "generateModuleFileName", ->
+        it "Generate module file name for writting", ->
+          module =
+            name: "filename"
+
+          plugin.generateModuleFileName module
+
+          module.should.contain.keys ['filename']
+          module.filename.should.equal "#{plugin.public}/js/filename.js"
 
     describe "Post-compile hook", ->
       data = [

@@ -22,7 +22,8 @@
   "dependencies": {
     "coffee-script": "1.3.3",
     "jade": "~0.31.0",
-    "mkdirp": "*"
+    "mkdirp": "*",
+    "lodash": "~0.9.0"    
   },
   "devDependencies": {
     "mocha": "*",
