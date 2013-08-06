@@ -133,7 +133,7 @@ module.exports = class JadeAngularJsCompiler
     @writeModules _.chain(preResult)
       .difference(assets)
       .each((v) => @attachModuleNameToTemplate v)
-      .each((v) => v.path = sysPath.join.apply(this, v.path)) # concat items to virtual url
+      .each((v) -> v.path = v.path.join('/')) # concat items to virtual url
       .groupBy((v) -> v.module)
       .map((v, k) -> name: k, templates: v)
       .each((v) => @generateModuleFileName v)
