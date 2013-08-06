@@ -1,6 +1,9 @@
 jade-angularjs-brunch [![Build Status](https://travis-ci.org/GulinSS/jade-angularjs-brunch.png?branch=master)](https://travis-ci.org/GulinSS/jade-angularjs-brunch)
 =====================
 
+DEPRECATED! Need update!
+========================
+
 Automatic compiler Jade templates to AngularJS modules for Brunch.IO
 
 ## Sample of settings:
