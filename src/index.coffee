@@ -49,13 +49,14 @@ module.exports = class JadeAngularJsCompiler
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
     pair.path.splice 0, 1, @public
 
-  writeStatic: (pair) ->
-    @preparePairStatic pair
-    writer = fileWriter sysPath.join.apply(this, pair.path)
-    writer null, pair.result
+  writeStatic: (pairs) ->
+    _.each pairs, (pair) =>
+      @preparePairStatic pair
+      writer = fileWriter sysPath.join.apply(this, pair.path)
+      writer null, pair.result
 
   attachModuleNameToTemplate: (pair) ->
-    pair.module = pair.path[0..-3].join '.'
+    pair.module = pair.path[0..-2].join '.'
 
   generateModuleFileName: (module) ->
     module.filename = sysPath.join.apply(this, [@public, 'js', module.name+".js"])

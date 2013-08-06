@@ -153,7 +153,7 @@ describe "JadeAngularJsCompiler", ->
       describe "attachModuleNameToTemplate", ->
         it "Add module name to pair", ->
           pair =
-            path: ['app', 'folder', 'file', 'jade']
+            path: ['app', 'folder', 'file.jade']
             content: "<!DOCTYPE html>"
 
           plugin.attachModuleNameToTemplate pair
