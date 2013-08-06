@@ -17,6 +17,8 @@ module.exports = class JadeAngularJsCompiler
   type: 'template'
   extension: 'jade'
 
+  # TODO: group parameters
+  # TODO: remove @modulesFolder, no needed.
   constructor: (config) ->
     @public = config.paths?.public or "_public"
     @pretty = !!config.plugins?.jade?.pretty
