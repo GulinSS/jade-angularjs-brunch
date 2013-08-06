@@ -218,29 +218,29 @@ describe "JadeAngularJsCompiler", ->
 
       it "For modules it should filtered and grouped them correct", ->
         expect = [
-            name: 'test'
+            name: 'test.folder'
             templates: [
               path: 'test/folder/partial1.jade'
               result: '<!DOCTYPE html>'
-              module: 'test'
+              module: 'test.folder'
             ,
               path: 'test/folder/partial2.jade'
               result: '<!DOCTYPE html>'
-              module: 'test'
+              module: 'test.folder'
             ]
-            filename: '_public/js/test.js'
+            filename: '_public/js/test.folder.js'
         ,
-            name: 'test.folder',
+            name: 'test.folder.folder',
             templates: [
               path: 'test/folder/folder/partial1.jade'
               result: '<!DOCTYPE html>'
-              module: 'test.folder'
+              module: 'test.folder.folder'
             ,
               path: 'test/folder/folder/partial2.jade'
               result: '<!DOCTYPE html>'
-              module: 'test.folder'
+              module: 'test.folder.folder'
             ],
-            filename: '_public/js/test.folder.js'
+            filename: '_public/js/test.folder.folder.js'
         ]
 
         plugin.onCompile data
