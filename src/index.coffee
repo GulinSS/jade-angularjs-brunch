@@ -18,13 +18,12 @@ module.exports = class JadeAngularJsCompiler
   extension: 'jade'
 
   # TODO: group parameters
-  # TODO: remove @modulesFolder, no needed.
   constructor: (config) ->
     @public = config.paths?.public or "_public"
     @pretty = !!config.plugins?.jade?.pretty
     @doctype = config.plugins?.jade?.doctype or "5"
     @locals = config.plugins?.jade_angular?.locals or {}
-    @modulesFolder = config.plugins?.jade_angular?.modules_folder or "templates"
+    @staticMask = config.plugins?.jade_angular?.static_mask or /index.jade/
     @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths?.jadeCompileTrigger or 'js/dontUseMe')
     @singleFile = !!config?.plugins?.jade_angular?.single_file
     @singleFileName = sysPath.join @public, (config?.plugins?.jade_angular?.single_file_name or "js/angular_templates.js")
@@ -48,7 +47,7 @@ module.exports = class JadeAngularJsCompiler
 
   preparePairStatic: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
-    pair.path.splice 0, 0, @public
+    pair.path.splice 0, 1, @public
 
   writeStatic: (pair) ->
     @preparePairStatic pair
@@ -59,7 +58,7 @@ module.exports = class JadeAngularJsCompiler
     pair.module = pair.path[0..-3].join '.'
 
   generateModuleFileName: (module) ->
-    module.filename = "#{@public}/js/#{module.name}.js"
+    module.filename = sysPath.join.apply(this, [@public, 'js', module.name+".js"])
 
   writeModules: (modules) ->
 
@@ -127,14 +126,14 @@ module.exports = class JadeAngularJsCompiler
   onCompile: (compiled) ->
     preResult = @prepareResult compiled
 
-    assets = _.filter preResult, (v) -> v.path.indexOf('assets') > 0
+    assets = _.filter preResult, (v) => @staticMask.test v.path
 
     @writeStatic assets
 
     @writeModules _.chain(preResult)
       .difference(assets)
       .each((v) => @attachModuleNameToTemplate v)
-      .each((v) -> v.path = v.path.join('/')) # concat items to virtual url
+      .each((v) => v.path = sysPath.join.apply(this, v.path)) # concat items to virtual url
       .groupBy((v) -> v.module)
       .map((v, k) -> name: k, templates: v)
       .each((v) => @generateModuleFileName v)

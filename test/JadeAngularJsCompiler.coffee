@@ -29,13 +29,13 @@ describe "JadeAngularJsCompiler", ->
         public: _public
         pretty: false
         doctype: "5"
-        modulesFolder: "templates"
+        staticMask: /index.jade/
         compileTrigger: compileTrigger
         singleFile: false
         singleFileName: "#{_public}/js/angular_templates.js"
 
       for k, v of defaults
-        plugin[k].should.equal v
+        plugin[k].should.deep.equal v
 
       Object.keys(plugin.locals).should.have.length 0
 
@@ -142,13 +142,13 @@ describe "JadeAngularJsCompiler", ->
         xit "TODO: write content to file", ->
 
       describe "preparePairStatic", ->
-        it "Change file extension from jade to html and add result public folder as first. Used only by writeStatic.", ->
+        it "Change file extension from jade to html, add result public folder as first and remove second folder like \'app\'. Used only by writeStatic.", ->
           path = ['folder', 'file', 'jade']
 
           plugin.preparePairStatic
             path: path
 
-          path.should.be.deep.equal ['_public', 'folder', 'file', 'html']
+          path.should.be.deep.equal ['_public', 'file', 'html']
 
       describe "attachModuleNameToTemplate", ->
         it "Add module name to pair", ->
@@ -174,8 +174,6 @@ describe "JadeAngularJsCompiler", ->
     describe "Post-compile hook", ->
       data = [
         sourceFiles: [
-          path: "test/folder/assets/index.jade"
-        ,
           path: "test/folder/index.jade"
         ,
           path: "test/folder/partial1.jade"
@@ -204,21 +202,24 @@ describe "JadeAngularJsCompiler", ->
         plugin.writeStatic.should.have.been.calledOnce
         plugin.writeModules.should.have.been.calledOnce
 
-      it "For assets (any paths contains \'assets\' folder) it should write them \'as is\'", ->
+      it "For static jade files (valid for staticMask) it should write them \'as is\'", ->
+        expect = [
+          path: [ 'test', 'folder', 'index.jade' ]
+          result: '<!DOCTYPE html>'
+        ,
+          path: [ 'test', 'folder', 'folder', 'index.jade' ]
+          result: '<!DOCTYPE html>'
+        ]
+
         plugin.onCompile data
 
         plugin.writeStatic.args[0].should.length 1
-        plugin.writeStatic.args[0][0].should.length 1
-        plugin.writeStatic.args[0][0][0].path.should.deep.equal ['test', 'folder', 'assets', 'index.jade']
+        plugin.writeStatic.args[0][0].should.deep.equal expect
 
       it "For modules it should filtered and grouped them correct", ->
         expect = [
             name: 'test'
             templates: [
-              path: 'test/folder/index.jade'
-              result: '<!DOCTYPE html>'
-              module: 'test'
-            ,
               path: 'test/folder/partial1.jade'
               result: '<!DOCTYPE html>'
               module: 'test'
@@ -231,10 +232,6 @@ describe "JadeAngularJsCompiler", ->
         ,
             name: 'test.folder',
             templates: [
-              path: 'test/folder/folder/index.jade'
-              result: '<!DOCTYPE html>'
-              module: 'test.folder'
-            ,
               path: 'test/folder/folder/partial1.jade'
               result: '<!DOCTYPE html>'
               module: 'test.folder'
