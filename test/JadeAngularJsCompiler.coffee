@@ -150,16 +150,82 @@ describe "JadeAngularJsCompiler", ->
 
           path.should.be.deep.equal ['_public', 'file', 'html']
 
+      describe "parsePairsIntoAssetsTree", ->
+        it "Translate paths of pairs into assets tree", ->
+          pairs = [
+            path: ["app", "folder", "file.name"]
+          ,
+            path: ["app", "folder", "file2.name"]
+          ,
+            path: ["app", "folder", "folder", "file.name"]
+          ,
+            path: ["app", "folder2", "file.name"]
+          ]
+
+          result = plugin.parsePairsIntoAssetsTree pairs
+
+          result.should.deep.equal [
+            name: "app"
+            children: [
+              name: "folder"
+              children: [
+                name: "folder"
+                children: []
+              ]
+            ,
+              name: "folder2"
+              children: []
+            ]
+          ]
+
       describe "attachModuleNameToTemplate", ->
-        it "Add module name to pair", ->
+        assetsTree = [
+          name: "app"
+          children: [
+            name: "folder"
+            children: []
+          ]
+        ]
+
+        it "Pair in a folder with static page should be placed in one module", ->
+          pair =
+            path: ['app', 'file.jade']
+            content: "<!DOCTYPE html>"
+
+          plugin.attachModuleNameToTemplate pair, assetsTree
+
+          pair.should.contain.keys ['module']
+          pair.module.should.equal "app"
+
+        it "Pair should be placed in child module in a case when a folder with index.jade has child folder with own index.jade", ->
           pair =
             path: ['app', 'folder', 'file.jade']
             content: "<!DOCTYPE html>"
 
-          plugin.attachModuleNameToTemplate pair
+          plugin.attachModuleNameToTemplate pair, assetsTree
 
           pair.should.contain.keys ['module']
           pair.module.should.equal "app.folder"
+
+        it "Pair in deeper path of the last folder with index.jade should be placed in last parent", ->
+          pair =
+            path: ['app', 'folder', 'folder', 'file.jade']
+            content: "<!DOCTYPE html>"
+
+          plugin.attachModuleNameToTemplate pair, assetsTree
+
+          pair.should.contain.keys ['module']
+          pair.module.should.equal "app.folder"
+
+        it "If application don't have any static assets all jade files will be stored in top module", ->
+          pair =
+            path: ['app', 'folder', 'file.jade']
+            content: "<!DOCTYPE html>"
+
+          plugin.attachModuleNameToTemplate pair, []
+
+          pair.should.contain.keys ['module']
+          pair.module.should.equal "app"
 
       describe "generateModuleFileName", ->
         it "Generate module file name for writting", ->

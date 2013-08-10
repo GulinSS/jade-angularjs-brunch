@@ -55,8 +55,45 @@ module.exports = class JadeAngularJsCompiler
       writer = fileWriter sysPath.join.apply(this, pair.path)
       writer null, pair.result
 
-  attachModuleNameToTemplate: (pair) ->
-    pair.module = pair.path[0..-2].join '.'
+  parsePairsIntoAssetsTree: (pairs) ->
+    assets = _.map(pairs, (v) => @removeFileNameFromPath v.path)
+    root = []
+
+    _.each assets, (path) ->
+      node = root
+      _.each path, (v) ->
+        child = _.find node, (vv) -> vv.name is v
+
+        if child is undefined
+          child =
+            name: v
+            children: []
+
+          node.push child
+
+        node = child.children
+
+    return root
+
+  attachModuleNameToTemplate: (pair, assetsTree) ->
+    path = @removeFileNameFromPath pair.path
+
+    if assetsTree.length is 0
+      pair.module = path[0]
+      return
+
+    findedPath = []
+    node = assetsTree
+    _.each path, (v) ->
+      child = _.find node, (vv) -> vv.name is v
+      return if child is undefined
+
+      findedPath.push child.name
+      node = child.children
+
+    pair.module = findedPath.join '.'
+
+  removeFileNameFromPath: (path) -> path[0..-2]
 
   generateModuleFileName: (module) ->
     module.filename = sysPath.join.apply(this, [@public, 'js', module.name+".js"])
@@ -120,20 +157,20 @@ module.exports = class JadeAngularJsCompiler
           doctype: @doctype
           pretty: @pretty
 
-        result =
-          path: e.path.split sysPath.sep
-          result: content @locals
+        path: e.path.split sysPath.sep
+        result: content @locals
 
   onCompile: (compiled) ->
     preResult = @prepareResult compiled
 
     assets = _.filter preResult, (v) => @staticMask.test v.path
+    assetsTree = @parsePairsIntoAssetsTree assets
 
     @writeStatic assets
 
     @writeModules _.chain(preResult)
       .difference(assets)
-      .each((v) => @attachModuleNameToTemplate v)
+      .each((v) => @attachModuleNameToTemplate v, assetsTree)
       .each((v) -> v.path = v.path.join('/')) # concat items to virtual url
       .groupBy((v) -> v.module)
       .map((v, k) -> name: k, templates: v)
