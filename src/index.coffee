@@ -79,7 +79,7 @@ module.exports = class JadeAngularJsCompiler
     path = @removeFileNameFromPath pair.path
 
     if assetsTree.length is 0
-      pair.module = path[0]
+      pair.module ="#{path[0]}.templates"
       return
 
     findedPath = []
@@ -90,6 +90,8 @@ module.exports = class JadeAngularJsCompiler
 
       findedPath.push child.name
       node = child.children
+
+    findedPath.push "templates"
 
     pair.module = findedPath.join '.'
 

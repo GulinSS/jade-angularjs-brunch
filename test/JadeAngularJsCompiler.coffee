@@ -195,7 +195,7 @@ describe "JadeAngularJsCompiler", ->
           plugin.attachModuleNameToTemplate pair, assetsTree
 
           pair.should.contain.keys ['module']
-          pair.module.should.equal "app"
+          pair.module.should.equal "app.templates"
 
         it "Pair should be placed in child module in a case when a folder with index.jade has child folder with own index.jade", ->
           pair =
@@ -205,7 +205,7 @@ describe "JadeAngularJsCompiler", ->
           plugin.attachModuleNameToTemplate pair, assetsTree
 
           pair.should.contain.keys ['module']
-          pair.module.should.equal "app.folder"
+          pair.module.should.equal "app.folder.templates"
 
         it "Pair in deeper path of the last folder with index.jade should be placed in last parent", ->
           pair =
@@ -215,7 +215,7 @@ describe "JadeAngularJsCompiler", ->
           plugin.attachModuleNameToTemplate pair, assetsTree
 
           pair.should.contain.keys ['module']
-          pair.module.should.equal "app.folder"
+          pair.module.should.equal "app.folder.templates"
 
         it "If application don't have any static assets all jade files will be stored in top module", ->
           pair =
@@ -225,7 +225,7 @@ describe "JadeAngularJsCompiler", ->
           plugin.attachModuleNameToTemplate pair, []
 
           pair.should.contain.keys ['module']
-          pair.module.should.equal "app"
+          pair.module.should.equal "app.templates"
 
       describe "generateModuleFileName", ->
         it "Generate module file name for writting", ->
@@ -284,29 +284,29 @@ describe "JadeAngularJsCompiler", ->
 
       it "For modules it should filtered and grouped them correct", ->
         expect = [
-            name: 'test.folder'
+            name: 'test.folder.templates'
             templates: [
               path: 'test/folder/partial1.jade'
               result: '<!DOCTYPE html>'
-              module: 'test.folder'
+              module: 'test.folder.templates'
             ,
               path: 'test/folder/partial2.jade'
               result: '<!DOCTYPE html>'
-              module: 'test.folder'
+              module: 'test.folder.templates'
             ]
-            filename: '_public/js/test.folder.js'
+            filename: '_public/js/test.folder.templates.js'
         ,
-            name: 'test.folder.folder',
+            name: 'test.folder.folder.templates',
             templates: [
               path: 'test/folder/folder/partial1.jade'
               result: '<!DOCTYPE html>'
-              module: 'test.folder.folder'
+              module: 'test.folder.folder.templates'
             ,
               path: 'test/folder/folder/partial2.jade'
               result: '<!DOCTYPE html>'
-              module: 'test.folder.folder'
+              module: 'test.folder.folder.templates'
             ],
-            filename: '_public/js/test.folder.folder.js'
+            filename: '_public/js/test.folder.folder.templates.js'
         ]
 
         plugin.onCompile data
