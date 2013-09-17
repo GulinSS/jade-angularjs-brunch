@@ -28,23 +28,6 @@ module.exports = class JadeAngularJsCompiler
     @singleFile = !!config?.plugins?.jade_angular?.single_file
     @singleFileName = sysPath.join @public, (config?.plugins?.jade_angular?.single_file_name or "js/angular_templates.js")
 
-  # Do nothing, just check possibility of Jade compilation
-  compile: (data, path, callback) ->
-    try
-      content = jade.compile data, 
-        compileDebug: no,
-        client: no,
-        filename: path,
-        doctype: @doctype
-        pretty: @pretty
-
-      content @locals
-    catch err
-
-      error = err
-    finally
-      callback error, ""
-
   preparePairStatic: (pair) ->
     pair.path.push(pair.path.pop()[...-@extension.length] + 'html')
     pair.path.splice 0, 1, @public
