@@ -52,7 +52,6 @@ module.exports = class JadeAngularJsCompiler
     pair.path.splice 0, 1, @public
 
   writeStatic: (pairs) ->
-    console.log 'pairs:', pairs
     _.each pairs, (pair) =>
       @preparePairStatic pair
       writer = fileWriter sysPath.join.apply(this, pair.path)
@@ -139,20 +138,17 @@ module.exports = class JadeAngularJsCompiler
     content = ""
     singleFile = @singleFile
     _.each modules, (module) ->
-      console.log 'module:', module
+      
       moduleContent = buildModule module
-
-      console.log 'singleFile: ', singleFile
+      
       if singleFile
-        console.log 'adding single file content'
         content += "\n#{moduleContent}"
+      
       else
-        console.log 'writing all files'
         writer = fileWriter module.filename
         writer null, moduleContent
 
     if @singleFile
-      console.log 'writing single file'
       writer = fileWriter @singleFileName
       writer null, content
   prepareResult: (compiled) ->
@@ -191,7 +187,6 @@ module.exports = class JadeAngularJsCompiler
       .each((v) => 
         v.path.push(v.path.pop()[...-@extension.length] + 'html')
         v.path = v.path.join('/')
-        console.log 'v.path:', v.path
       ) # concat items to virtual url
       .groupBy((v) -> v.module)
       .map((v, k) -> name: k, templates: v)
