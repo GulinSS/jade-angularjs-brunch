@@ -27,7 +27,7 @@ module.exports = class JadeAngularJsCompiler
     @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths?.jadeCompileTrigger or 'js/dontUseMe')
     @singleFile = !!config?.plugins?.jade_angular?.single_file
     @singleFileName = sysPath.join @public, (config?.plugins?.jade_angular?.single_file_name or "js/angular_templates.js")
-    @angularModuleNamespace = config.plugins?.jade_angular?.angular_module_namespace or ""
+    @angularModule = config.plugins?.jade_angular?.angular_module or {}
     @outputDirectory = config.plugins?.jade_angular?.output_directory or 'js'
 
   # Do nothing, just check possibility of Jade compilation
@@ -80,8 +80,8 @@ module.exports = class JadeAngularJsCompiler
   attachModuleNameToTemplate: (pair, assetsTree) ->
     path = @removeFileNameFromPath pair.path
 
-    if @angularModuleNamespace
-      pair.module = @angularModuleNamespace + '.templates';
+    if @angularModule.namespace
+      pair.module = @angularModule.namespace + '.templates';
       return;
     
     if assetsTree.length is 0
@@ -107,11 +107,17 @@ module.exports = class JadeAngularJsCompiler
     module.filename = sysPath.join.apply(this, [@public, @outputDirectory, module.name+".js"])
 
   writeModules: (modules) ->
+    predefined = @angularModule.predefined
     buildModule = (module) ->
       moduleHeader = (name) ->
-        """
-        angular.module('#{name}', [])
-        """
+        if !predefined
+          """
+          angular.module('#{name}', [])
+          """
+        else
+          """
+          angular.module('#{name}')
+          """
 
       templateRecord = (result, path) ->
         parseStringToJSArray = (str) ->
@@ -167,8 +173,8 @@ module.exports = class JadeAngularJsCompiler
 
         path = e.path.split sysPath.sep
 
-        if @angularModuleNamespace
-          path[0] = @angularModuleNamespace;
+        if @angularModule.namespace
+          path[0] = @angularModule.namespace;
 
         path: path
         result: content @locals

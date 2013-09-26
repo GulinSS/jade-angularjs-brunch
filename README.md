@@ -62,14 +62,16 @@ plugins:
 ```
 
 
-# Angular Module Namespacing
+# Angular Module Config
 
-You can add an angular module namespace to all templates using the `angular_module_namespace` property.
+You can add an angular module namespace to all templates using the `angular_module` property.
 
 ```coffee
 jade_angular:
       single_file: false
-      angular_module_namespace: 'myLibrary'
+      angular_module
+      	namespace: 'myLibrary'
+      	predefined: false
 ```
 This will create template files with namespaced modules instead of using directory structure.
 
@@ -83,6 +85,28 @@ angular.module('myLibrary.templates', [])
 '</div>',''].join("\n"));
 }]);
 ```
+
+You can also specify whether or not the angular module has been predfined using the `predefined` property
+ 
+```coffee
+jade_angular:
+      single_file: false
+      angular_module
+      	namespace: 'myLibrary'
+      	predefined: true
+```
+
+```javascript
+angular.module('myLibrary.templates')
+.run([ '$templateCache', function($templateCache) {
+  return $templateCache.put('myLibrary/templates/hello.html', [
+'',
+'<div>',
+'  <h1>Hello, World!</h1>',
+'</div>',''].join("\n"));
+}]);
+```
+
 
 # Single-File Mode
 
