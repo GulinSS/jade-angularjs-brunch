@@ -42,7 +42,7 @@ module.exports = JadeAngularJsCompiler = (function() {
   JadeAngularJsCompiler.prototype.extension = 'jade';
 
   function JadeAngularJsCompiler(config) {
-    var _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
+    var _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
     this["public"] = ((_ref = config.paths) != null ? _ref["public"] : void 0) || "_public";
     this.pretty = !!((_ref1 = config.plugins) != null ? (_ref2 = _ref1.jade) != null ? _ref2.pretty : void 0 : void 0);
     this.doctype = ((_ref3 = config.plugins) != null ? (_ref4 = _ref3.jade) != null ? _ref4.doctype : void 0 : void 0) || "5";
@@ -51,8 +51,7 @@ module.exports = JadeAngularJsCompiler = (function() {
     this.compileTrigger = sysPath.normalize(this["public"] + sysPath.sep + (((_ref9 = config.paths) != null ? _ref9.jadeCompileTrigger : void 0) || 'js/dontUseMe'));
     this.singleFile = !!(config != null ? (_ref10 = config.plugins) != null ? (_ref11 = _ref10.jade_angular) != null ? _ref11.single_file : void 0 : void 0 : void 0);
     this.singleFileName = sysPath.join(this["public"], (config != null ? (_ref12 = config.plugins) != null ? (_ref13 = _ref12.jade_angular) != null ? _ref13.single_file_name : void 0 : void 0 : void 0) || "js/angular_templates.js");
-    this.angularModuleNamespace = ((_ref14 = config.plugins) != null ? (_ref15 = _ref14.jade_angular) != null ? _ref15.angular_module_namespace : void 0 : void 0) || "";
-    this.outputDirectory = ((_ref16 = config.plugins) != null ? (_ref17 = _ref16.jade_angular) != null ? _ref17.output_directory : void 0 : void 0) || 'js';
+    this.angularModuleNamespace = ((_ref14 = config.plugins) != null ? (_ref15 = _ref14.jade_angular) != null ? _ref15.angular_module_namespace : void 0 : void 0) || null;
   }
 
   JadeAngularJsCompiler.prototype.compile = function(data, path, callback) {
@@ -81,7 +80,6 @@ module.exports = JadeAngularJsCompiler = (function() {
 
   JadeAngularJsCompiler.prototype.writeStatic = function(pairs) {
     var _this = this;
-    console.log('pairs:', pairs);
     return _.each(pairs, function(pair) {
       var writer;
       _this.preparePairStatic(pair);
@@ -121,12 +119,15 @@ module.exports = JadeAngularJsCompiler = (function() {
   JadeAngularJsCompiler.prototype.attachModuleNameToTemplate = function(pair, assetsTree) {
     var findedPath, node, path;
     path = this.removeFileNameFromPath(pair.path);
+    console.log('path:' , path)
     if (this.angularModuleNamespace) {
       pair.module = this.angularModuleNamespace + '.templates';
       return;
     }
+
     if (assetsTree.length === 0) {
       pair.module = "" + path[0] + ".templates";
+      console.log('returning: ' , pair.module)
       return;
     }
     findedPath = [];
@@ -151,11 +152,11 @@ module.exports = JadeAngularJsCompiler = (function() {
   };
 
   JadeAngularJsCompiler.prototype.generateModuleFileName = function(module) {
-    return module.filename = sysPath.join.apply(this, [this["public"], this.outputDirectory, module.name + ".js"]);
+    return module.filename = sysPath.join.apply(this, [this["public"], 'js', module.name + ".js"]);
   };
 
   JadeAngularJsCompiler.prototype.writeModules = function(modules) {
-    var buildModule, content, singleFile, writer;
+    var buildModule, content, writer;
     buildModule = function(module) {
       var addEndOfModule, content, moduleHeader, templateRecord;
       moduleHeader = function(name) {
@@ -171,7 +172,7 @@ module.exports = JadeAngularJsCompiler = (function() {
           });
           return stringArray += "''" + '].join("\\n")';
         };
-        return "\n.run([ '$templateCache', function($templateCache) {\n  return $templateCache.put('" + path + "', " + (parseStringToJSArray(result)) + ");\n}])";
+        return "\n.run(['$templateCache', function($templateCache) {\n  return $templateCache.put('" + path + "', " + (parseStringToJSArray(result)) + ");\n}])";
       };
       addEndOfModule = function() {
         return ";\n";
@@ -183,23 +184,17 @@ module.exports = JadeAngularJsCompiler = (function() {
       return content += addEndOfModule();
     };
     content = "";
-    singleFile = this.singleFile;
     _.each(modules, function(module) {
       var moduleContent, writer;
-      console.log('module:', module);
       moduleContent = buildModule(module);
-      console.log('singleFile: ', singleFile);
-      if (singleFile) {
-        console.log('adding single file content');
+      if (this.singleFile) {
         return content += "\n" + moduleContent;
       } else {
-        console.log('writing all files');
         writer = fileWriter(module.filename);
         return writer(null, moduleContent);
       }
     });
     if (this.singleFile) {
-      console.log('writing single file');
       writer = fileWriter(this.singleFileName);
       return writer(null, content);
     }
@@ -215,7 +210,7 @@ module.exports = JadeAngularJsCompiler = (function() {
       return [];
     }
     return pathes.sourceFiles.map(function(e, i) {
-      var content, data, path;
+      var content, data;
       data = fs.readFileSync(e.path, 'utf8');
       content = jade.compile(data, {
         compileDebug: false,
@@ -224,7 +219,9 @@ module.exports = JadeAngularJsCompiler = (function() {
         doctype: _this.doctype,
         pretty: _this.pretty
       });
-      path = e.path.split(sysPath.sep);
+
+      var path;
+      path = e.path.split(sysPath.sep)
       if (_this.angularModuleNamespace) {
         path[0] = _this.angularModuleNamespace;
       }
@@ -247,9 +244,7 @@ module.exports = JadeAngularJsCompiler = (function() {
     return this.writeModules(_.chain(preResult).difference(assets).each(function(v) {
       return _this.attachModuleNameToTemplate(v, assetsTree);
     }).each(function(v) {
-      v.path.push(v.path.pop().slice(0, -_this.extension.length) + 'html');
-      v.path = v.path.join('/');
-      return console.log('v.path:', v.path);
+      return v.path = v.path.join('/');
     }).groupBy(function(v) {
       return v.module;
     }).map(function(v, k) {

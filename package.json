@@ -30,5 +30,16 @@
     "chai": "*",
     "sinon": "~1.7.3",
     "sinon-chai": "~2.4.0"
-  }
+  },
+  "readme": "jade-angularjs-brunch [![Build Status](https://travis-ci.org/GulinSS/jade-angularjs-brunch.png?branch=master)](https://travis-ci.org/GulinSS/jade-angularjs-brunch)\n=====================\n\nDEPRECATED! Need update!\n========================\n\nAutomatic compiler Jade templates to AngularJS modules for Brunch.IO\n\n## Sample of settings:\n\n### Add to dependencies section in package.json of your project:\n\n`` \"jade-angularjs-brunch\" : \">= 0.0.1 < 1.5\" `` \n\n### Add to paths section in config.coffee:\n\n```coffee\njadeCompileTrigger: '.compile-jade'  # Defaults to 'js/dontUseMe'.\n```\n\n### Add to templates section in config.coffee:\n\n```coffee\njoinTo: \n  '.compile-jade': /^app/  # Hack for auto-compiling Jade templates.\n```\n\n### Add to plugin section in config.coffee:\n\n```coffee\nplugins:\n  jade:\n    pretty: yes  # Adds pretty-indentation whitespaces to output (false by default).\n    doctype: \"xml\"  # Specify doctype (\"5\" by default).\n  jade_angular:\n    modules_folder: 'templates'\n    locals: {}\n```\n\n* modules_folder: folder with your template\n* locals: context for jade compiler\n\n### Now you can get angular.js modules:\n\n_public/js/login.template.js:\n\n```js\nangular.module('login.templates', [])\n.run(['$templateCache', function($templateCache) {\n  return $templateCache.put('/login/modal.page.html', [\n'This is content of your jade-file',''].join(\"\\n\"));\n}])\n```\n\n# Single-File Mode\n\nIf you want a single file instead of a file per module, you can use the `single_file` option in `jade_angular`.\n\n```coffee\nplugins:\n  jade_angular:\n    single_file: true\n    # if you want to change the file name (defaults to js/templates.js and is in your public directory)\n    single_file_name: 'js/angular_templates.js'\n```\n",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/GulinSS/jade-angularjs-brunch/issues"
+  },
+  "_id": "jade-angularjs-brunch@1.1.1",
+  "_from": "jade-angularjs-brunch@1.1.1",
+  "dist": {
+    "shasum": "93d3372c6f8b4a4bf1d0a4cf87dc18bc4a187680"
+  },
+  "_resolved": "https://registry.npmjs.org/jade-angularjs-brunch/-/jade-angularjs-brunch-1.1.1.tgz"
 }
