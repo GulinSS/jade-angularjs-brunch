@@ -27,6 +27,8 @@ module.exports = class JadeAngularJsCompiler
     @compileTrigger = sysPath.normalize @public + sysPath.sep + (config.paths?.jadeCompileTrigger or 'js/dontUseMe')
     @singleFile = !!config?.plugins?.jade_angular?.single_file
     @singleFileName = sysPath.join @public, (config?.plugins?.jade_angular?.single_file_name or "js/angular_templates.js")
+    @angularModule = config.plugins?.jade_angular?.angular_module or {}
+    @outputDirectory = config.plugins?.jade_angular?.output_directory or 'js'
 
   # Do nothing, just check possibility of Jade compilation
   compile: (data, path, callback) ->
@@ -78,8 +80,12 @@ module.exports = class JadeAngularJsCompiler
   attachModuleNameToTemplate: (pair, assetsTree) ->
     path = @removeFileNameFromPath pair.path
 
+    if @angularModule.namespace
+      pair.module = @angularModule.namespace + '.templates';
+      return;
+    
     if assetsTree.length is 0
-      pair.module ="#{path[0]}.templates"
+      pair.module = "#{path[0]}.templates"
       return
 
     findedPath = []
@@ -98,15 +104,20 @@ module.exports = class JadeAngularJsCompiler
   removeFileNameFromPath: (path) -> path[0..-2]
 
   generateModuleFileName: (module) ->
-    module.filename = sysPath.join.apply(this, [@public, 'js', module.name+".js"])
+    module.filename = sysPath.join.apply(this, [@public, @outputDirectory, module.name+".js"])
 
   writeModules: (modules) ->
-
+    predefined = @angularModule.predefined
     buildModule = (module) ->
       moduleHeader = (name) ->
-        """
-        angular.module('#{name}', [])
-        """
+        if !predefined
+          """
+          angular.module('#{name}', [])
+          """
+        else
+          """
+          angular.module('#{name}')
+          """
 
       templateRecord = (result, path) ->
         parseStringToJSArray = (str) ->
@@ -116,7 +127,7 @@ module.exports = class JadeAngularJsCompiler
           stringArray += "''" + '].join("\\n")'
 
         """
-        \n.run(['$templateCache', function($templateCache) {
+        \n.run([ '$templateCache', function($templateCache) {
           return $templateCache.put('#{path}', #{parseStringToJSArray(result)});
         }])
         """
@@ -131,12 +142,14 @@ module.exports = class JadeAngularJsCompiler
       content += addEndOfModule()
 
     content = ""
-
+    singleFile = @singleFile
     _.each modules, (module) ->
+      
       moduleContent = buildModule module
-
-      if @singleFile
+      
+      if singleFile
         content += "\n#{moduleContent}"
+      
       else
         writer = fileWriter module.filename
         writer null, moduleContent
@@ -144,7 +157,6 @@ module.exports = class JadeAngularJsCompiler
     if @singleFile
       writer = fileWriter @singleFileName
       writer null, content
-
   prepareResult: (compiled) ->
     pathes = _.find compiled, (v) => v.path is @compileTrigger
 
@@ -159,7 +171,12 @@ module.exports = class JadeAngularJsCompiler
           doctype: @doctype
           pretty: @pretty
 
-        path: e.path.split sysPath.sep
+        path = e.path.split sysPath.sep
+
+        if @angularModule.namespace
+          path[0] = @angularModule.namespace;
+
+        path: path
         result: content @locals
 
   onCompile: (compiled) ->
@@ -173,7 +190,10 @@ module.exports = class JadeAngularJsCompiler
     @writeModules _.chain(preResult)
       .difference(assets)
       .each((v) => @attachModuleNameToTemplate v, assetsTree)
-      .each((v) -> v.path = v.path.join('/')) # concat items to virtual url
+      .each((v) => 
+        v.path.push(v.path.pop()[...-@extension.length] + 'html')
+        v.path = v.path.join('/')
+      ) # concat items to virtual url
       .groupBy((v) -> v.module)
       .map((v, k) -> name: k, templates: v)
       .each((v) => @generateModuleFileName v)
