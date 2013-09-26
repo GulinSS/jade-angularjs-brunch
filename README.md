@@ -51,6 +51,38 @@ angular.module('login.templates', [])
 'This is content of your jade-file',''].join("\n"));
 }])
 ```
+# Specific Output Directory
+
+You can now specify the output directory of the compiled files using the `output_directory` property of the config
+```coffee
+plugins:
+plugins:
+  jade_angular:
+    output_directory: 'foo'
+```
+
+
+# Angular Module Namespacing
+
+You can add an angular module namespace to all templates using the `angular_module_namespace` property.
+
+```coffee
+jade_angular:
+      single_file: false
+      angular_module_namespace: 'myLibrary'
+```
+This will create template files with namespaced modules instead of using directory structure.
+
+```javascript
+angular.module('myLibrary.templates', [])
+.run([ '$templateCache', function($templateCache) {
+  return $templateCache.put('myLibrary/templates/hello.html', [
+'',
+'<div>',
+'  <h1>Hello, World!</h1>',
+'</div>',''].join("\n"));
+}]);
+```
 
 # Single-File Mode
 
@@ -58,8 +90,8 @@ If you want a single file instead of a file per module, you can use the `single_
 
 ```coffee
 plugins:
-  jade_angular:
-    single_file: true
+  jade_angular:     single_file: true
     # if you want to change the file name (defaults to js/templates.js and is in your public directory)
     single_file_name: 'js/angular_templates.js'
+ 
 ```
