@@ -148,6 +148,9 @@ module.exports = class JadeAngularJsCompiler
   onCompile: (compiled) ->
     preResult = @prepareResult compiled
 
+    # Need to stop processing if there's nothing to process
+    return if preResult.length is 0
+
     assets = _.filter preResult, (v) => @staticMask.test v.path
     assetsTree = @parsePairsIntoAssetsTree assets
 
